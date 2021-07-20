@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: hello-spring-boot-
+spec:
+  params:
+    - name: IMAGE_NAME
+      value: 'image-registry.openshift-image-registry.svc:5000/java-project/hello-spring-boot'
+    - name: APP_NAME
+      value: hello-spring-boot
+    - name: GITHUB_REPO_URL
+      value: 'http://gitea-cicd-tools.apps.ocp.example.com/gitea/hello-spring-boot'
+    - name: GITHUB_REPO_REVISION
+      value: master
+  pipelineRef:
+    name: hello-spring-boot
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: source-pvc

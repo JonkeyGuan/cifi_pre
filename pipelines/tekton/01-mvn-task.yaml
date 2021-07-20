@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  name: mvn
+spec:
+  params:
+    - default:
+        - package
+      description: The Maven goals to run
+      name: GOALS
+      type: array
+    - name: SUB_DIR
+      description: The sub directory to work on 
+      type: string
+      default: ""
+    - name: SETTINGS
+      description: The settings file for artifactories
+      type: string
+      default: "./nexus_openshift_settings.xml"
+  steps:
+    - args:
+        - '-Dmaven.repo.local=$(workspaces.source.path)/../.m2'
+        - '-s'
+        - $(inputs.params.SETTINGS)
+        - $(inputs.params.GOALS)
+      command:
+        - /usr/bin/mvn
+      image: quay.io/jonkey/cloud-builders-mvn:20210721
+      name: mvn
+      resources: {}
+      workingDir: $(workspaces.source.path)/$(params.SUB_DIR)
+  workspaces:
+    - name: source
