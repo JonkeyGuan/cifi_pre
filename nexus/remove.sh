@@ -1,6 +1,4 @@
 
-oc delete is nexus
-
 oc delete dc nexus
 
 oc delete svc nexus

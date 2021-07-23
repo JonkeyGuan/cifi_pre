@@ -9,18 +9,6 @@ metadata:
     tags: ci,nexus
 objects:
 - apiVersion: v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: ${SERVICE_NAME}
-    name: ${SERVICE_NAME}
-  spec:
-    tags:
-    - from:
-        kind: DockerImage
-        name: ${NEXUS_IMAGE}:${NEXUS_VERSION}
-      name: ${NEXUS_VERSION}
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
@@ -41,7 +29,7 @@ objects:
         - env:
           - name: CONTEXT_PATH
             value: /
-          image: ' '
+          image: ${NEXUS_IMAGE}:${NEXUS_VERSION}
           imagePullPolicy: IfNotPresent
           livenessProbe:
             exec:
@@ -89,14 +77,6 @@ objects:
     test: false
     triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - ${SERVICE_NAME}
-        from:
-          kind: ImageStreamTag
-          name: ${SERVICE_NAME}:${NEXUS_VERSION}
-      type: ImageChange
 - apiVersion: v1
   kind: Service
   metadata:
