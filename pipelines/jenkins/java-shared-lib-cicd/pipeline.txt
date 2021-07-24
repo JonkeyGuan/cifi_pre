@@ -1,0 +1,8 @@
+library 'jenkins-shared-lib-with-pipeline'
+javaCICDPipeline (
+    appName: "hello-spring-boot",
+    project: "java-project",
+    targetRegistry: "quay.io/jonkey",
+    gitUrl: "http://gitea-cicd-tools.apps.ocp1.rhcnsa.com/gitea/hello-spring-boot.git",
+    artifact: "target/hello-spring-boot-0.0.1-SNAPSHOT.jar"
+)
