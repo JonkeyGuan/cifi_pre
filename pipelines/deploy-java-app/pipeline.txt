@@ -1,0 +1,58 @@
+def appName    = "hello-spring-boot"
+def tag        = ""
+def project    = "java-project"
+def gitUrl     = "http://gitea-cicd-tools.apps.cluster0.ocp4.paas.cifi.com.cn/gitea/hello-spring-boot-cd.git"
+def env        = ""
+
+pipeline {
+  agent {
+    label "slave"
+  }
+
+  //parameters {
+  //  choice(choices: ['qa', 'uat'], description: 'Which env to deploy?', name: 'env')
+  //  string(description: 'which app image tag to deploy', name: 'tag')
+  //}
+
+  stages {
+    stage('Checkout Source') {
+      steps {
+        git credentialsId: 'gitea', url: "${gitUrl}"
+        script {
+          tag  = params.tag
+          env  = params.env
+        }
+      }
+    }
+
+    stage('Change Version') {
+      steps {
+        script {
+          sh """
+          	newImage=`grep 'image:' overlays/${env}/deployment-patches.yaml | awk -F ':' '{print \$1\":\"\$2\":${tag}\"}'`
+          	newImage=`echo \${newImage} | xargs echo -n`
+          	sed -i "s|image:.*\$|\${newImage}|" overlays/${env}/deployment-patches.yaml
+          	cat overlays/${env}/deployment-patches.yaml
+          """
+        }
+      }
+    }
+   
+    stage('Commit Changes') {
+      steps {
+		withCredentials([usernamePassword(credentialsId: 'gitea', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+          sh """
+          	git config --global user.email "gitea@gitea.com"
+  			git config --global user.name "gitea"
+  			git config --local credential.helper "!f() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; f"
+          	git add .
+            git commit -m "updated to new tag \${tag}"
+            git status 
+            git push -u origin master
+          """
+        }
+      }
+    }
+
+  }
+}
